@@ -35,7 +35,7 @@ st.markdown(
 )
 
 def display_messages():
-    st.subheader("அரட்டை")
+    st.subheader("உரையாடல்")
     for i, (msg, is_user) in enumerate(st.session_state["messages"]):
         message(msg, is_user=is_user, key=str(i))
     st.session_state["thinking_spinner"] = st.empty()
