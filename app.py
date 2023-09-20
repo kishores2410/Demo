@@ -91,7 +91,7 @@ def main():
             st.session_state["user_input"] = ""
             st.session_state["agent"] = Agent(st.session_state["OPENAI_API_KEY"])
 
-    st.subheader("மாதிரி இசை கேள்க்க")  # Change the subheader to Tamil
+    st.subheader("மாதிரி இசை கேள்வி௧ள்")  # Change the subheader to Tamil
     st.write("- What is Nadam?")
     st.write("- Are there any specific instruments or styles of Indian music that are particularly significant or popular?")
     st.write("- What are some of the key beliefs about the role of music in Indian culture?")
@@ -111,7 +111,7 @@ def main():
     st.session_state["ingestion_spinner"] = st.empty()
 
     display_messages()
-    st.text_input("இசைய சாரந்த கேளிகள்", key="user_input", disabled=not is_openai_api_key_set(), on_change=process_input)
+    st.text_input("இசை அடிப்படையிலான கேள்வி", key="user_input", disabled=not is_openai_api_key_set(), on_change=process_input)
 
     st.divider()
 
