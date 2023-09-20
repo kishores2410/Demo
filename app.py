@@ -5,7 +5,7 @@ from streamlit_chat import message
 from agent import Agent
 
 st.set_page_config(
-    page_title="பழைய இசை சந்தோஷம்",  # Change the page title to Tamil
+    page_title="இசையின் கதைகள்",  # Change the page title to Tamil
     page_icon="🎵",  # Change the page icon to a music note emoji
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -77,9 +77,9 @@ def main():
         else:
             st.session_state["agent"] = None
 
-    st.header("பழைய இசை சந்தோஷம்")  # Change the header to Tamil
+    st.header("இசையின் கதைகள்")  # Change the header to Tamil
 
-    if st.text_input("OpenAI API கீ", value=st.session_state["OPENAI_API_KEY"], key="input_OPENAI_API_KEY", type="password"):
+    if st.text_input("OpenAI API Key", value=st.session_state["OPENAI_API_KEY"], key="input_OPENAI_API_KEY", type="password"):
         if (
             len(st.session_state["input_OPENAI_API_KEY"]) > 0
             and st.session_state["input_OPENAI_API_KEY"] != st.session_state["OPENAI_API_KEY"]
@@ -92,9 +92,10 @@ def main():
             st.session_state["agent"] = Agent(st.session_state["OPENAI_API_KEY"])
 
     st.subheader("மாதிரி இசை கேள்க்க")  # Change the subheader to Tamil
-    st.write("- குரலின் அம்சங்கள் என்ன?")
-    st.write("- எப்படி இசைக்கு மேலும் அறிந்தது?")
-    st.write("- திரைப்படத்தில் அம்சம் பார்த்தால் என்ன அந்த குரல் அம்சம் என்ன?")
+    st.write("- What is Nadam?")
+    st.write("- Are there any specific instruments or styles of Indian music that are particularly significant or popular?")
+    st.write("- What are some of the key beliefs about the role of music in Indian culture?")
+    st.write("- How has Indian music evolved over time, and what are some of the major influences on its development?")
 
     st.subheader("இசை ஆவணம் பதிவேற்ற")  # Change the subheader to Tamil
     st.file_uploader(
@@ -110,7 +111,7 @@ def main():
     st.session_state["ingestion_spinner"] = st.empty()
 
     display_messages()
-    st.text_input("இசை கேட்க கேள்க்கவும்", key="user_input", disabled=not is_openai_api_key_set(), on_change=process_input)
+    st.text_input("இசைய சாரந்த கேளிகள்", key="user_input", disabled=not is_openai_api_key_set(), on_change=process_input)
 
     st.divider()
 
