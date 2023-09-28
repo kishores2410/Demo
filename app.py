@@ -4,7 +4,7 @@ from pytube import YouTube
 import openai
 
 # Initialize OpenAI
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = "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"
 
 # Streamlit app
 st.markdown('<h1>YouTube GPT 🤖</h1>', unsafe_allow_html=True)
