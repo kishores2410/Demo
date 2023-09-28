@@ -5,3 +5,8 @@ openai
 faiss-cpu
 pypdf
 tiktoken
+pytube 
+gradio
+chromadb
+tiktoken
+openai-whisper
