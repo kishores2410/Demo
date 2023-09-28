@@ -4,6 +4,8 @@ import datetime as dt
 import whisper
 from pytube import YouTube
 import streamlit as st
+from typing import Optional
+
 
 # Initialize variables
 chat_history = []
@@ -250,8 +252,25 @@ def embed_yt(yt_link: str):
     # Return the HTML code and an empty list.
     return embed_html, []
 
-# Function to embed a video
-def embed_video(video=str | None):
+# # Function to embed a video
+# def embed_video(video=str | None):
+#     # This function embeds a video into the page.
+
+#     # Check if the video is valid.
+#     if not video:
+#         st.error('Upload a Video')
+
+#     # Set the global variable `run_once_flag` to False.
+#     # This is used to prevent the function from being called more than once.
+#     run_once_flag = False
+
+#     # Create a chain using the video.
+#     make_chain(video=video)
+
+#     # Return the video and an empty list.
+#     return video, []
+
+def embed_video(video: Optional[str] = None):
     # This function embeds a video into the page.
 
     # Check if the video is valid.
@@ -267,6 +286,7 @@ def embed_video(video=str | None):
 
     # Return the video and an empty list.
     return video, []
+
 
 # Streamlit app entry point
 if __name__ == "__main__":
