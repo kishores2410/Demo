@@ -1,4 +1,3 @@
-plotly
 matplotlib
 scipy
 sklearn
