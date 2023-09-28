@@ -69,16 +69,16 @@ with st.sidebar:
                 pd.DataFrame(data_transcription).to_csv('transcription.csv') 
                 segments = output['segments']
 
-                # Pinacone index
-                # check if index_name index already exists (only create index if not)
-                # index_name = str(video_id)
-                # # check if 'index_name' index already exists (only create index if not)
-                # if 'index1' not in pinecone.list_indexes():
-                #     pinecone.create_index('index1', dimension=len(segments))
-                # # connect to index
-                # index = pinecone.Index('index1')
+               # Pinacone index
+              #  check if index_name index already exists (only create index if not)
+                index_name = str(video_id)
+                # check if 'index_name' index already exists (only create index if not)
+                if 'index1' not in pinecone.list_indexes():
+                    pinecone.create_index('index1', dimension=len(segments))
+                # connect to index
+                index = pinecone.Index('index1')
                 
-                #st.write(segments)
+                st.write(segments)
                 #Embeddings
                 for segment in segments:
                     openai.api_key = user_secret
@@ -94,10 +94,10 @@ with st.sidebar:
                         "embedding": embeddings
                     }
                     data.append(meta)
-                # upsert_response = index.upsert(
-                #         vectors=data,
-                #         namespace=video_id
-                #     )
+                upsert_response = index.upsert(
+                        vectors=data,
+                        namespace=video_id
+                    )
                 pd.DataFrame(data).to_csv('word_embeddings.csv') 
                 os.remove("youtube_video.mp4")
                 st.success('Analysis completed')
@@ -106,7 +106,7 @@ st.markdown('<h1>Youtube GPT 🤖<small> by <a href="https://codegpt.co">Code GP
 st.write("Start a chat with this video of Microsoft CEO Satya Nadella's interview. You just need to add your OpenAI API Key and paste it in the 'Chat with the video' tab.")
 
 DEFAULT_WIDTH = 80
-VIDEO_DATA = "https://youtu.be/bsFXgfbj8Bc"
+#VIDEO_DATA = "https://youtu.be/bsFXgfbj8Bc"
 
 width = 40
 
