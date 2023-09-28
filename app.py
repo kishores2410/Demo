@@ -150,7 +150,8 @@ def main():
     with st.sidebar:
         #enable_box = st.textbox(label='Upload your OpenAI API key', value=None, key="enable_box")
         enable_box = st.text_input(label='Upload your OpenAI API key', value=None, key="enable_box")
-        disable_box = st.textbox(label='OpenAI API key is Set', value='OpenAI API key is Set', key="disable_box")
+        disable_box = st.text_area(label='OpenAI API key is Set', value='OpenAI API key is Set', key="disable_box")
+       # disable_box = st.textbox(label='OpenAI API key is Set', value='OpenAI API key is Set', key="disable_box")
         remove_box = st.textbox(label='Your API key successfully removed', value='Your API key successfully removed', key="remove_box")
         pause = st.button(label='Pause', key="pause")
         resume = st.button(label='Resume', key="resume")
