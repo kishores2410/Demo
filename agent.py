@@ -7,7 +7,8 @@ from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from pytube import YouTube
-from typing import Any, List
+from typing import Any, List, Union
+
 
 # Global variables
 chat_history = []
@@ -39,8 +40,7 @@ def load_video(url: str) -> str:
 
     return target_dir+'/'+yt.title+'.mp4'
 
-# Function to process video and return transcription
-def process_video(video=None, url=None) -> dict[str, str | list]:
+def process_video(video=None, url=None) -> Union[dict[str, str], dict[str, list]]:
     if url:
         file_dir = load_video(url)
     else:
