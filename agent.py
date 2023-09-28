@@ -15,13 +15,13 @@ chain = None
 run_once_flag = False
 call_to_load_video = 0
 
-enable_box = gr.Textbox.update(value=None, placeholder='Upload your OpenAI API key', interactive=True)
-disable_box = gr.Textbox.update(value='OpenAI API key is Set', interactive=False)
-remove_box = gr.Textbox.update(value='Your API key successfully removed', interactive=False)
-pause = gr.Button.update(interactive=False)
-resume = gr.Button.update(interactive=True)
-update_video = gr.Video.update(value=None)
-update_yt = gr.HTML.update(value=None)
+enable_box = st.text_input.update(value=None, placeholder='Upload your OpenAI API key', interactive=True)
+disable_box = st.text_input.update(value='OpenAI API key is Set', interactive=False)
+remove_box = st.text_input.update(value='Your API key successfully removed', interactive=False)
+pause = st.button.update(interactive=False)
+resume = st.button.update(interactive=True)
+update_video = st.video.update(value=None)
+update_yt = st.HTML.update(value=None)
 
 
 def set_apikey(api_key):
