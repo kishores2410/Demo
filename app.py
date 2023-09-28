@@ -4,8 +4,6 @@ import datetime as dt
 import whisper
 from pytube import YouTube
 import streamlit as st
-from typing import Optional
-
 
 # Initialize variables
 chat_history = []
@@ -18,57 +16,7 @@ call_to_load_video = 0
 st.set_page_config(layout="wide")
 st.title("Video Transcription and Chatbot")
 
-# API Key Input
-api_key = st.text_input("Enter OpenAI API key", key="api_key")
-
-# Change Key Button
-if st.button("Change Key"):
-    os.environ['OPENAI_API_KEY'] = api_key
-    st.success("OpenAI API key is set.")
-
-# Remove Key Button
-if st.button("Remove Key"):
-    os.environ['OPENAI_API_KEY'] = ''
-    st.success("Your API key has been successfully removed.")
-
-# Video Input
-st.sidebar.subheader("Video Input")
-video_option = st.sidebar.radio("Choose Video Source", ("Upload Video", "YouTube URL"))
-
-if video_option == "Upload Video":
-    uploaded_video = st.sidebar.file_uploader("Upload a video", type=["mp4"])
-else:
-    yt_link = st.sidebar.text_input("Paste a YouTube link")
-    if st.sidebar.button("Initiate Transcription"):
-        # Call the process_video function with the YouTube link
-        result = process_video(url=yt_link)
-
-# Embed Video or YouTube
-st.sidebar.subheader("Embed Video")
-if st.sidebar.button("Embed Video"):
-    st.write("Embed the video here")
-
-# Reset App Button
-if st.sidebar.button("Reset App"):
-    # Call the reset_vars function
-    chat_history, result, chain, run_once_flag, call_to_load_video = reset_vars()
-
-# Chatbot Interface
-st.subheader("Chatbot Interface")
-query = st.text_input("Enter your query here")
-
-if st.button("Ask Question"):
-    # Call the QuestionAnswer function
-    for response, _ in QuestionAnswer(chat_history, query, yt_link, uploaded_video):
-        # Display responses
-        st.write(response[-1][-1])
-
-# Display chat history
-st.write("Chat History:")
-for item in chat_history:
-    st.write(f"{item[0]}: {item[1]}")
-
-# Function to load video and transcribe it
+# Function to process video and return transcribed text
 def process_video(video=None, url=None):
     global result
 
@@ -80,6 +28,28 @@ def process_video(video=None, url=None):
     st.write('Transcribing Video with Whisper base model')
     model = whisper.load_model("base")
     result = model.transcribe(file_dir)
+
+# Function to load video from YouTube and return the file path
+def load_video(url:str) -> str:
+    global result
+
+    yt = YouTube(url)
+    target_dir = os.path.join('/tmp', 'Youtube')
+    if not os.path.exists(target_dir):
+        os.mkdir(target_dir)
+
+    if os.path.exists(target_dir+'/'+yt.title+'.mp4'):
+        return target_dir+'/'+yt.title+'.mp4'
+    try:
+
+        yt.streams.filter(only_audio=True)
+        stream = yt.streams.get_audio_only()
+        st.write('----DOWNLOADING AUDIO FILE----')
+        stream.download(output_path=target_dir)
+    except:
+        st.error('Issue in Downloading video')
+
+    return target_dir+'/'+yt.title+'.mp4'
 
 # Function to process video and return transcribed text
 def process_text(video=None, url=None):
@@ -130,52 +100,15 @@ def process_text(video=None, url=None):
 
     return grouped_texts, time_list
 
-# Function to load video from YouTube and return the file path
-def load_video(url:str) -> str:
-    global result
-
-    yt = YouTube(url)
-    target_dir = os.path.join('/tmp', 'Youtube')
-    if not os.path.exists(target_dir):
-        os.mkdir(target_dir)
-
-    if os.path.exists(target_dir+'/'+yt.title+'.mp4'):
-        return target_dir+'/'+yt.title+'.mp4'
-    try:
-
-        yt.streams.filter(only_audio=True)
-        stream = yt.streams.get_audio_only()
-        st.write('----DOWNLOADING AUDIO FILE----')
-        stream.download(output_path=target_dir)
-    except:
-        st.error('Issue in Downloading video')
-
-    return target_dir+'/'+yt.title+'.mp4'
-
-# Function to set the OpenAI API key
-def set_apikey(api_key):
-    os.environ['OPENAI_API_KEY'] = api_key
-    return disable_box
-
-# Function to enable the API key input box
-def enable_api_box():
-    return enable_box
-
-# Function to remove the OpenAI API key
-def remove_key_box():
-    os.environ['OPENAI_API_KEY'] = ''
-    return remove_box
-
-# Function to reset app variables
-def reset_vars():
-    global chat_history, result, chain, run_once_flag, call_to_load_video
-
-    os.environ['OPENAI_API_KEY'] = ''
-    chat_history = None
-    result, chain = None, None
-    run_once_flag, call_to_load_video = False, 0
-
-    return [], '', None, None, None
+# Function to get the title of the video (either from URL or uploaded file)
+def get_title(url, video):
+    if url != None:
+        yt = YouTube(url)
+        title = yt.title
+    else:
+        title = os.path.basename(video)
+        title = title[:-4]
+    return title
 
 # Function to create a ConversationalRetrievalChain
 def make_chain(url=None, video=None):
@@ -199,97 +132,108 @@ def make_chain(url=None, video=None):
     else:
         return chain
 
-# Function to get the title of the video (either from URL or uploaded file)
-def get_title(url, video):
-    if url != None:
-        yt = YouTube(url)
-        title = yt.title
-    else:
-        title = os.path.basename(video)
-        title = title[:-4]
-    return title
+# Function to reset app variables
+def reset_vars():
+    global chat_history, result, chain, run_once_flag, call_to_load_video
 
-# Function to check if the video file exists
-def check_path(url=None, video=None):
-    if url:
-        yt = YouTube(url)   
-        if os.path.exists('/tmp/Youtube'+yt.title+'.mp4'):
-            return True
-    else:
-        if os.path.exists(video):
-            return True
-    return False
+    os.environ['OPENAI_API_KEY'] = ''
+    chat_history = None
+    result, chain = None, None
+    run_once_flag, call_to_load_video = False, 0
 
-# Function to embed a YouTube video
-def embed_yt(yt_link: str):
-    # This function embeds a YouTube video into the page.
+    return [], '', None, None, None
 
-    # Check if the YouTube link is valid.
-    if not yt_link:
-        st.error('Paste a Youtube link')
+# Main Streamlit app
+def main():
+    global chain, chat_history
 
-    # Set the global variable `run_once_flag` to False.
-    # This is used to prevent the function from being called more than once.
-    run_once_flag = False
+    with st.sidebar:
+        enable_box = st.textbox(label='Upload your OpenAI API key', value=None, key="enable_box")
+        disable_box = st.textbox(label='OpenAI API key is Set', value='OpenAI API key is Set', key="disable_box")
+        remove_box = st.textbox(label='Your API key successfully removed', value='Your API key successfully removed', key="remove_box")
+        pause = st.button(label='Pause', key="pause")
+        resume = st.button(label='Resume', key="resume")
 
-    # Set the global variable `call_to_load_video` to 0.
-    # This is used to keep track of how many times the function has been called.
-    call_to_load_video = 0
+    if st.sidebar.button("Change Key"):
+        set_apikey(enable_box)
+        st.success("OpenAI API key is set.")
 
-    # Create a chain using the YouTube link.
-    make_chain(url=yt_link)
+    if st.sidebar.button("Remove Key"):
+        remove_key_box()
+        st.success("Your API key has been successfully removed.")
 
-    # Get the URL of the YouTube video.
-    url = yt_link.replace('watch?v=', '/embed/')
+    if st.sidebar.button("Reset App"):
+        chat_history, result, chain, run_once_flag, call_to_load_video = reset_vars()
+        st.success("App has been reset.")
 
-    # Create the HTML code for the embedded YouTube video.
-    embed_html = f"""<iframe width="750" height="315" src="{url}"
-                     title="YouTube video player" frameborder="0"
-                     allow="accelerometer; autoplay; clipboard-write;
-                     encrypted-media; gyroscope; picture-in-picture"
-                     allowfullscreen></iframe>"""
+    with st.sidebar:
+        st.write("Please reset the app after being done with the app to remove resources")
 
-    # Return the HTML code and an empty list.
-    return embed_html, []
+    st.sidebar.markdown("---")
 
-# # Function to embed a video
-# def embed_video(video=str | None):
-#     # This function embeds a video into the page.
+    with st.sidebar:
+        st.markdown("### Transcription and Chatbot")
+        st.write("1. Upload a video file (e.g., MP4) or provide a YouTube link.")
+        st.write("2. Click 'Initiate Transcription' to transcribe the video.")
+        st.write("3. Ask questions or have a conversation with the chatbot.")
+        st.write("4. Reset the app to remove resources.")
 
-#     # Check if the video is valid.
-#     if not video:
-#         st.error('Upload a Video')
+    st.sidebar.markdown("---")
 
-#     # Set the global variable `run_once_flag` to False.
-#     # This is used to prevent the function from being called more than once.
-#     run_once_flag = False
+    st.sidebar.text("Chat History")
 
-#     # Create a chain using the video.
-#     make_chain(video=video)
+    # Main content
+    st.markdown("## Video Transcription and Chatbot")
 
-#     # Return the video and an empty list.
-#     return video, []
+    st.markdown("### Upload Video or Provide YouTube Link")
 
-def embed_video(video: Optional[str] = None):
-    # This function embeds a video into the page.
+    col1, col2 = st.beta_columns(2)
 
-    # Check if the video is valid.
-    if not video:
-        st.error('Upload a Video')
+    with col1:
+        video = st.file_uploader("Upload a video file (MP4)", type=["mp4"])
 
-    # Set the global variable `run_once_flag` to False.
-    # This is used to prevent the function from being called more than once.
-    run_once_flag = False
+    with col2:
+        yt_link = st.text_input("Paste a YouTube link here")
 
-    # Create a chain using the video.
-    make_chain(video=video)
+    st.write("---")
 
-    # Return the video and an empty list.
-    return video, []
+    if st.button("Initiate Transcription"):
+        if video and yt_link:
+            st.error("Upload a video or provide a YouTube link, but not both.")
+        elif not video and not yt_link:
+            st.error("Provide a YouTube link or upload a video.")
+        else:
+            if video:
+                video_path = tempfile.mktemp(suffix=".mp4")
+                with open(video_path, "wb") as f:
+                    f.write(video.read())
+                process_video(video=video_path)
+            else:
+                process_video(url=yt_link)
 
+    st.write("---")
 
-# # Streamlit app entry point
-# if __name__ == "__main__":
-#     streamlit run app.py
-#     st.run()
-    
+    if result:
+        st.markdown("### Video Transcription")
+
+        texts, time_list = process_text()
+        for text, timestamp in zip(texts, time_list):
+            st.write(f"{timestamp}: {text}")
+
+        st.write("---")
+
+        st.markdown("### Chat with the Chatbot")
+        st.write("Ask questions or have a conversation with the chatbot.")
+
+        chat_input = st.text_input("Enter your question or message")
+        if st.button("Send"):
+            if chat_input:
+                response = chain({"question": chat_input, 'chat_history': chat_history}, return_only_outputs=True)
+                chat_history.append((chat_input, response["answer"]))
+                st.write(f"You: {chat_input}")
+                st.write(f"Chatbot: {response['answer']}")
+            else:
+                st.error("Please enter a question or message.")
+
+if __name__ == "__main__":
+    main()
