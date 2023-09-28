@@ -288,8 +288,8 @@ def embed_video(video: Optional[str] = None):
     return video, []
 
 
-# Streamlit app entry point
-if __name__ == "__main__":
-    streamlit run app.py
-    st.run()
+# # Streamlit app entry point
+# if __name__ == "__main__":
+#     streamlit run app.py
+#     st.run()
     
