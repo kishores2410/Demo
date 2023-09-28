@@ -179,7 +179,7 @@ def check_path(url=None, video=None):
             return True
     return False
 
-def make_chain(url=None, video=None) -> (ConversationalRetrievalChain | Any | None):
+def make_chain(url=None, video=None) -> Union[ConversationalRetrievalChain, Any, None]:
     global chain, run_once_flag
 
     if not url and not video:
