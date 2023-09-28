@@ -29,6 +29,10 @@ if youtube_link and user_question:
             return_text=True
         )
 
+        # Check if transcription is empty or None
+        if not transcription or not transcription.text:
+            raise ValueError("Transcription is empty or None")
+
         # Chat with GPT-3
         st.write("Chatting with the video...")
         prompt = f"Q: {user_question}\nA:"
@@ -37,6 +41,10 @@ if youtube_link and user_question:
             prompt=prompt,
             max_tokens=50
         )
+
+        # Check if response is empty or None
+        if not response or not response.choices:
+            raise ValueError("GPT-3 response is empty or None")
 
         # Display results
         st.header("Transcription:")
