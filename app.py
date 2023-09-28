@@ -29,12 +29,21 @@ audio_file = ''
 #     environment=os.getenv("PINECONE_ENVIRONMENT")
 # )
 
+# Default video link
+VIDEO_DATA = "https://youtu.be/bsFXgfbj8Bc"
+
 # Uncomment this section if you want to upload your own video
 st.markdown('<h1>Youtube GPT 🤖<small> by <a href="https://codegpt.co">Code GPT</a></small></h1>', unsafe_allow_html=True)
-st.write("Start a chat with this video of Microsoft CEO Satya Nadella's interview. You just need to add your OpenAI API Key and paste the video link in the 'Chat with the video' tab.")
+st.write("Start a chat with this video of Microsoft CEO Satya Nadella's interview. You can paste your own video link below or use the default link.")
 
 DEFAULT_WIDTH = 80
-VIDEO_DATA = "https://youtu.be/bsFXgfbj8Bc"
+
+# User-provided video link
+youtube_link = st.text_input(label=":red[Or Paste Your YouTube Link]",
+                             placeholder="Paste your YouTube video link here")
+
+# Use the user-provided link if available, otherwise use the default link
+video_link = youtube_link if youtube_link else VIDEO_DATA
 
 width = 40
 
@@ -42,8 +51,10 @@ width = max(width, 0.01)
 side = max((100 - width) / 2, 0.01)
 
 _, container, _ = st.columns([side, 47, side])
-container.video(data=VIDEO_DATA)
+container.video(data=video_link)
 tab1, tab2, tab3, tab4 = st.columns([1, 1, 1, 1])
+# Rest of the code remains the same...
+
 with tab1:
     st.header("How does it work?")
     st.markdown('Read the article to know how it works: [Medium Article]("https://medium.com/@dan.avila7/youtube-gpt-start-a-chat-with-a-video-efe92a499e60")')
