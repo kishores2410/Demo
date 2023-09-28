@@ -290,4 +290,6 @@ def embed_video(video: Optional[str] = None):
 
 # Streamlit app entry point
 if __name__ == "__main__":
+    streamlit run app.py
     st.run()
+    
