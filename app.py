@@ -4,7 +4,7 @@ from pytube import YouTube
 import openai
 
 # Initialize OpenAI
-openai.api_key = "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"
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
 # Streamlit app
 st.markdown('<h1>YouTube GPT 🤖</h1>', unsafe_allow_html=True)
@@ -47,4 +47,4 @@ if youtube_link and user_question:
         st.write(response.choices[0].text.strip())
 
     except Exception as e:
-        st.error("An error occurred. Please check the YouTube link and try again.")
+        st.error(f"An error occurred: {str(e)}")
