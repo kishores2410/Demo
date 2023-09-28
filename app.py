@@ -1,17 +1,19 @@
 import streamlit as st
 from agent import *
 
+# Set the title of the app
 st.title("Video Transcription and Chatbot App")
 
-# Streamlit widgets for user interaction
+# Create a text input widget for entering the OpenAI API key
 api_key = st.text_input("Enter OpenAI API key")
 set_key_button = st.button("Set API Key")
 
+# When the "Set API Key" button is clicked, set the OpenAI API key
 if set_key_button:
     set_apikey(api_key)
     st.success("OpenAI API key is set")
 
-# Define variables to hold video and chat history
+# Initialize variables for video and chat history
 video_url = ""
 video_path = ""
 chat_history = []
