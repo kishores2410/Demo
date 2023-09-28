@@ -98,7 +98,7 @@ def load_video(url:str) -> str:
 
     return os.path.join(target_dir, f"{yt.title}.mp4")
 
-def process_video(video=None, url=None) -> dict[str, str | list]:
+def process_video(video=None, url=None) -> dict[str, Union[str, list]]:
 
     if url:
         file_dir = load_video(url)
@@ -201,7 +201,7 @@ def make_chain(url=None, video=None) -> (ConversationalRetrievalChain | Any | No
     else:
         return chain
 
-def QuestionAnswer(history, query=None, url=None, video=None) -> Generator[Any | None, Any, None]:
+def QuestionAnswer(history, query=None, url=None, video=None) -> Generator[Union[Any, None], Any, None]:
     global chat_history, chain
 
     if video and url:
