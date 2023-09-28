@@ -7,72 +7,40 @@ from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from pytube import YouTube
-from typing import TYPE_CHECKING, Any, Generator, List
+from typing import Any, List
 
+# Global variables
 chat_history = []
 result = None
 chain = None
 run_once_flag = False
 call_to_load_video = 0
 
-enable_box = st.text_input.update(value=None, placeholder='Upload your OpenAI API key', interactive=True)
-disable_box = st.text_input.update(value='OpenAI API key is Set', interactive=False)
-remove_box = st.text_input.update(value='Your API key successfully removed', interactive=False)
-pause = st.button.update(interactive=False)
-resume = st.button.update(interactive=True)
-update_video = st.video.update(value=None)
-update_yt = st.HTML.update(value=None)
-
-
+# Function to set the OpenAI API key
 def set_apikey(api_key):
     os.environ['OPENAI_API_KEY'] = api_key
-    return disable_box
 
-
-def enable_api_box():
-    return enable_box
-
-
-def remove_key_box():
-    os.environ['OPENAI_API_KEY'] = ''
-    return remove_box
-
-
-def reset_vars():
-    global chat_history, result, chain, run_once_flag, call_to_load_video
-
-    os.environ['OPENAI_API_KEY'] = ''
-    chat_history = None
-    result, chain = None, None
-    run_once_flag, call_to_load_video = False, 0
-
-    return [], '', gr.Video.update(value=None), gr.HTML.update(value=None)
-
-
+# Function to load a video from a URL
 def load_video(url: str) -> str:
-    global result
-
     yt = YouTube(url)
     target_dir = os.path.join('/tmp', 'Youtube')
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
 
-    if os.path.exists(target_dir + '/' + yt.title + '.mp4'):
-        return target_dir + '/' + yt.title + '.mp4'
+    if os.path.exists(target_dir+'/'+yt.title+'.mp4'):
+        return target_dir+'/'+yt.title+'.mp4'
     try:
-
         yt.streams.filter(only_audio=True)
         stream = yt.streams.get_audio_only()
         print('----DOWNLOADING AUDIO FILE----')
         stream.download(output_path=target_dir)
     except:
-        raise gr.Error('Issue in Downloading video')
+        raise Exception('Issue in Downloading video')
 
-    return target_dir + '/' + yt.title + '.mp4'
+    return target_dir+'/'+yt.title+'.mp4'
 
-
+# Function to process video and return transcription
 def process_video(video=None, url=None) -> dict[str, str | list]:
-
     if url:
         file_dir = load_video(url)
     else:
@@ -81,10 +49,9 @@ def process_video(video=None, url=None) -> dict[str, str | list]:
     print('Transcribing Video with whisper base model')
     model = whisper.load_model("base")
     result = model.transcribe(file_dir)
-
     return result
 
-
+# Function to process video text and extract timestamps
 def process_text(video=None, url=None) -> tuple[list, list[dt.datetime]]:
     global call_to_load_video
 
@@ -127,13 +94,12 @@ def process_text(video=None, url=None) -> tuple[list, list[dt.datetime]]:
             current_group = text
         previous_time = time_list[-1]
 
-    # Append the last group of texts
     if current_group:
         grouped_texts.append(current_group)
 
     return grouped_texts, time_list
 
-
+# Function to get the title of a video from URL or file path
 def get_title(url, video):
     if url != None:
         yt = YouTube(url)
@@ -143,7 +109,7 @@ def get_title(url, video):
         title = title[:-4]
     return title
 
-
+# Function to check if a video file exists
 def check_path(url=None, video=None):
     if url:
         yt = YouTube(url)
@@ -154,17 +120,16 @@ def check_path(url=None, video=None):
             return True
     return False
 
-
+# Function to create a Conversational Retrieval Chain
 def make_chain(url=None, video=None) -> (ConversationalRetrievalChain | Any | None):
     global chain, run_once_flag
 
     if not url and not video:
-        raise gr.Error('Please provide a Youtube link or Upload a video')
+        raise Exception('Please provide a Youtube link or Upload a video')
     if not run_once_flag:
         run_once_flag = True
         title = get_title(url, video).replace(' ', '-')
 
-        # if not check_path(url, video):
         grouped_texts, time_list = process_text(url=url) if url else process_text(video=video)
         time_list = [{'source': str(t.time())} for t in time_list]
 
@@ -178,14 +143,14 @@ def make_chain(url=None, video=None) -> (ConversationalRetrievalChain | Any | No
     else:
         return chain
 
-
-def QuestionAnswer(history, query=None, url=None, video=None) -> Generator[Any | None, Any, None]:
+# Function to handle chatbot questions and answers
+def QuestionAnswer(history, query=None, url=None, video=None) -> List[str]:
     global chat_history, chain
 
     if video and url:
-        raise gr.Error('Upload a video or a Youtube link, not both')
+        raise Exception('Upload a video or a Youtube link, not both')
     elif not url and not video:
-        raise gr.Error('Provide a Youtube link or Upload a video')
+        raise Exception('Provide a Youtube link or Upload a video')
 
     result = chain({"question": query, 'chat_history': chat_history}, return_only_outputs=True)
     chat_history += [(query, result["answer"])]
@@ -193,59 +158,18 @@ def QuestionAnswer(history, query=None, url=None, video=None) -> Generator[Any |
         history[-1][-1] += char
         yield history, ''
 
-
+# Function to add text to chat history
 def add_text(history, text):
     if not text:
-        raise gr.Error('enter text')
+        raise Exception('Enter text')
     history = history + [(text, '')]
     return history
 
+# Function to reset app variables
+def reset_vars():
+    global chat_history, result, chain, run_once_flag, call_to_load_video
 
-def embed_yt(yt_link: str):
-    # This function embeds a YouTube video into the page.
-
-    # Check if the YouTube link is valid.
-    if not yt_link:
-        raise gr.Error('Paste a Youtube link')
-
-    # Set the global variable `run_once_flag` to False.
-    # This is used to prevent the function from being called more than once.
-    run_once_flag = False
-
-    # Set the global variable `call_to_load_video` to 0.
-    # This is used to keep track of how many times the function has been called.
-    call_to_load_video = 0
-
-    # Create a chain using the YouTube link.
-    make_chain(url=yt_link)
-
-    # Get the URL of the YouTube video.
-    url = yt_link.replace('watch?v=', '/embed/')
-
-    # Create the HTML code for the embedded YouTube video.
-    embed_html = f"""<iframe width="750" height="315" src="{url}"
-                     title="YouTube video player" frameborder="0"
-                     allow="accelerometer; autoplay; clipboard-write;
-                     encrypted-media; gyroscope; picture-in-picture"
-                     allowfullscreen></iframe>"""
-
-    # Return the HTML code and an empty list.
-    return embed_html, []
-
-
-def embed_video(video=str | None):
-    # This function embeds a video into the page.
-
-    # Check if the video is valid.
-    if not video:
-        raise gr.Error('Upload a Video')
-
-    # Set the global variable `run_once_flag` to False.
-    # This is used to prevent the function from being called more than once.
-    run_once_flag = False
-
-    # Create a chain using the video.
-    make_chain(video=video)
-
-    # Return the video and an empty list.
-    return video, []
+    os.environ['OPENAI_API_KEY'] = ''
+    chat_history = None
+    result, chain = None, None
+    run_once_flag, call_to_load_video = False, 0
